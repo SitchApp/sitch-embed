@@ -1,10 +1,16 @@
+## Demo
+
+The blog, store, and contact form on https://sitch.cards are all embedded Sitches.
+
 ## Installation
 
     yarn add sitch-embed
 or
 
     npm add sitch-embed
+or if you're not using a package manager
 
+    <script src="https://storage.googleapis.com/sitch-public/sitch-embed.js"></script> 
 
 ## Usage
 
@@ -32,6 +38,8 @@ And call the imported function.
 
     initializeSitchButtons();
 
-You can otionally provide a z-index for the embeded sitches to be placed at by giving a numerical argument. So to make the Sitches use z-index 1000 I would type: `initializeSitchButtons(1000)`.
+If you're not using a package manager you would just call `initializeSitchButtons();` once the script has loaded.
+
+You can optionally provide a z-index for the embedded Sitches to be placed at by giving a numerical argument. So to make the Sitches use z-index 1000 I would type: `initializeSitchButtons(1000)`.
 
 `initializeSitchButtons()` must be called after the Sitch buttons are mounted in the DOM. If your DOM dynamically changes you'll have to re-execute the function any time new Sitch buttons are constructed.
