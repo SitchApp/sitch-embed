@@ -206,9 +206,9 @@ export default (baseZIndex = 999999) => {
       _sitch_reinitializeButtons = () => {
         const sitchActivationButtons = document.querySelectorAll(`.sitch-activation-button`);
         sitchActivationButtons.forEach((button: any) => {          
-          const newButton = button.cloneNode(true);
-          button.parentNode.replaceChild(newButton, button);
           // Replacing the buttons to scrub any listensers.
+          const newButton = button.cloneNode(true);
+          button.parentNode.replaceChild(newButton, button);          
           newButton.style.cursor = 'pointer';                    
           const prepareContent = () => {
             sitchId = newButton.dataset.sitchId;
