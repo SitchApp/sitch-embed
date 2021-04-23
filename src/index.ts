@@ -1,6 +1,6 @@
 let _sitch_reinitializeButtons: null | (() => void) = null;
 
-export const initializeSitchButtons = (baseZIndex = 999999) => {
+export default (baseZIndex = 999999) => {
   if (_sitch_reinitializeButtons) {
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.    
     _sitch_reinitializeButtons();

@@ -13,6 +13,14 @@
   ],
   "author": "Nicholas Fisher <nick@sitch.app> (https://sitch.cards)",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SitchApp/sitch-embed"
+  },  
+  "bugs": {
+    "url": "https://github.com/SitchApp/sitch-embed/issues"
+  },
+  "homepage": "https://github.com/SitchApp/sitch-embed#readme",  
   "devDependencies": {
     "minify": "^7.0.1",
     "typescript": "^4.2.4"

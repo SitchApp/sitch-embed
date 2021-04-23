@@ -1,0 +1,37 @@
+## Installation
+
+    yarn add sitch-embed
+or
+
+    npm add sitch-embed
+
+
+## Usage
+
+So first you need to specify which buttons load a Sitch. You do this by adding the "sitch-activation-button" class to each relevant button. Then for each button you need to specify which Sitch it loads. You do this by adding a data attribute. There's two attributes for this:
+
+### data-sitch-id
+
+Every Sitch has a Sitch ID that you can see when editing the Sitch at https://mysitch.app at the very top of the page. It will look something like "i4lVvZB". So to embed and use a Sitch with that ID using a button, you would add `data-sitch-id="i4lVvZB"` to that button.
+
+### data-sitch-custom-id
+
+You can optionally generate a custom link for a Sitch when editing it. the last part of that custom link is the Sitches custom ID. So for https://sitch.app/blog, "blog" is the custom id. So to embed and use a Sitch with that ID using a button, you would add `data-sitch-custom-id="blog"` to that button.
+
+There's currently one more attribute you can use to customize things:
+
+### data-sitch-max-width
+
+Use this to determine how far in the embedded Sitch will slide in from the right when activated. The value is in pixels. An example would be `data-sitch-max-width="500"` to make the Sitch slide in from the right and stop at 500px in.
+
+Finally to activate the buttons you would import the library:
+
+    import initializeSitchButtons from 'sitch-embed';
+
+And call the imported function.
+
+    initializeSitchButtons();
+
+You can otionally provide a z-index for the embeded sitches to be placed at by giving a numerical argument. So to make the Sitches use z-index 1000 I would type: `initializeSitchButtons(1000)`.
+
+`initializeSitchButtons()` must be called after the Sitch buttons are mounted in the DOM. If your DOM dynamically changes you'll have to re-execute the function any time new Sitch buttons are constructed.
