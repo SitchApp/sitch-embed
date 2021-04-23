@@ -1,0 +1,21 @@
+{
+  "name": "sitch-embed",
+  "version": "1.0.0",
+  "description": "For embedding Sitches made on mysitch.app into websites.",
+  "main": "build/index.min.js",
+  "types": "build",
+  "scripts": {
+    "build": "tsc -p . && minify build/index.js > build/index.min.js"    
+  },
+  "keywords": [
+    "sitch",
+    "embed"
+  ],
+  "author": "Nicholas Fisher <nick@sitch.app> (https://sitch.cards)",
+  "license": "MIT",
+  "devDependencies": {
+    "minify": "^7.0.1",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {}
+}
