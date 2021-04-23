@@ -1,3 +1,7 @@
+## What is it?
+
+This package lets you use embedded Sitches on your website. Sitches are functionality focused web pages that you can build on https://mysitch.app. You can learn more about what they're for at https://sitch.cards.
+
 ## Demo
 
 The blog, store, and contact form on https://sitch.cards are all embedded Sitches.

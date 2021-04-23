@@ -178,26 +178,25 @@ export default (baseZIndex = 999999) => {
       globalScope.addEventListener('resize', appSize);
       globalScope.addEventListener(
         'message',
-        (event: MessageEvent) => {
-          // Do we trust the sender of this message?  (might be different from what we originally opened, for example).
-          if (!['https://sitch.app', 'https://sitch-client-test.web.app/', 'http://localhost:8081'].includes(event.origin)) {
+        (event: MessageEvent) => {          
+          if (!['https://sitch.app', 'https://sitch-client-test.web.app/'].includes(event.origin)) {
             return;
           }
           switch (event.data) {
             case '_sitch_fullscreen':
               document.documentElement.style.setProperty('--_sitch_max-content-width', '100vw');
               document.documentElement.style.setProperty('--_sitch_negative-max-content-width', '100vw');
-              return;
+              break;
             case '_sitch_shrink':
               setWidth();
-              return;
+              break;
             case '_sitch_close':
               setWidth();
               hideFunction();
-              return;
+              break;
             case '_sitch_loaded':
               endLoading();
-              return;              
+              break;              
           }
         },
         false
@@ -217,8 +216,7 @@ export default (baseZIndex = 999999) => {
             maxWidth = Number(newButton.dataset.sitchMaxWidth) || 0;
             setWidth();            
             if (iframe && (sitchId || customId)) {              
-              const newUrl = customId ? `https://sitch.app/${customId}/?e=true&ew=${maxWidth}&v=${version}` : `https://sitch.app/s/${sitchId}/?e=true&ew=${maxWidth}&v=${version}`;
-              // const newUrl = customId ? `http://localhost:8081/${customId}/?e=true&ew=${maxWidth}&v=${version}` : `http://localhost:8081/s/${sitchId}/?e=true&ew=${maxWidth}&v=${version}`;
+              const newUrl = customId ? `https://sitch.app/${customId}/?e=true&ew=${maxWidth}&v=${version}` : `https://sitch.app/s/${sitchId}/?e=true&ew=${maxWidth}&v=${version}`;              
               if (iframe.src !== newUrl) {
                 startLoading();
                 iframe.src = newUrl;
