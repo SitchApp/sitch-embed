@@ -44,6 +44,14 @@ And call the imported function.
 
 If you're not using a package manager you would just call `initializeSitchButtons();` once the script has loaded.
 
-You can optionally provide a z-index for the embedded Sitches to be placed at by giving a numerical argument. So to make the Sitches use z-index 1000 I would type: `initializeSitchButtons(1000)`.
+## Options
+
+`initializeSitchButtons` takes single argument for an options object. Current there's just one option.
+
+### baseZIndex (default: 999999)
+
+You can provide a z-index for the embedded Sitches. So to make the Sitches use z-index 1000 you would write `initializeSitchButtons({baseZIndex: 1000})`.
+
+## Caveats
 
 `initializeSitchButtons()` must be called after the Sitch buttons are mounted in the DOM. If your DOM dynamically changes you'll have to re-execute the function any time new Sitch buttons are constructed.

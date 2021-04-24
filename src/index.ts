@@ -1,6 +1,10 @@
 let _sitch_reinitializeButtons: null | (() => void) = null;
 
-function initialize(baseZIndex: number) {
+interface SitchOptions {
+  baseZIndex: number;
+}
+
+function initialize(options: SitchOptions) {
   const version = 5;
   const globalScope: any = window;
   const initSitchWidget = () => {
@@ -40,7 +44,7 @@ function initialize(baseZIndex: number) {
         }
         #_sitch_full-screen-dimmer {
           position: absolute;
-          z-index: ${baseZIndex - 1};
+          z-index: ${options.baseZIndex - 1};
           width: 100vw;
           height: 100vh;
           top: 0;
@@ -55,13 +59,13 @@ function initialize(baseZIndex: number) {
         #_sitch_iframe-container {    
           background-color: #ededf7;        
           transition: all 200ms ease-in;                                             
-          z-index: ${baseZIndex};
+          z-index: ${options.baseZIndex};
           position: fixed;
           top: 0;            
           right: var(--_sitch_negative-max-content-width);
           width: var(--_sitch_max-content-width);
           height: 100%; 
-          will-change: right;                       
+          will-change: right, width;                       
         }
         #_sitch_embed._sitch_show #_sitch_iframe-container {                        
           right: 0;
@@ -76,7 +80,7 @@ function initialize(baseZIndex: number) {
           position: absolute;
           width: 100%;
           height: 100%;
-          z-index: ${baseZIndex + 1};
+          z-index: ${options.baseZIndex + 1};
           top: 0;
           left: 0;
           display: none;
@@ -273,11 +277,15 @@ function initialize(baseZIndex: number) {
   }
 }
 
-export default (baseZIndex = 999999) => {
+export default (
+  options: SitchOptions = {
+    baseZIndex: 999999,
+  }
+) => {
   if (_sitch_reinitializeButtons) {
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
     _sitch_reinitializeButtons();
   } else {
-    initialize(baseZIndex);
+    initialize(options);
   }
 };
