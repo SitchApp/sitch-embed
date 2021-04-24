@@ -13,7 +13,7 @@ export default (
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
     _sitch_reinitializeButtons();
   } else {
-    const version = 6;
+    const version = 8;
     const globalScope: any = window;
     const initSitchWidget = () => {
       document.documentElement.style.setProperty('--_sitch_max-content-width', `100vw`);
@@ -144,15 +144,24 @@ export default (
         return;
       }
 
-      const toggleFunction = () => {
-        document.body.classList.toggle('_sitch_show');
-        container.classList.toggle('_sitch_show');
+      const showFunction = () => {
+        document.body.classList.add('_sitch_show');
+        container.classList.add('_sitch_show');
+        if (window.location.hash !== '#sitch-embed') {          
+          window.history.pushState('forward', '', './#sitch-embed');
+        }
       };
 
       const hideFunction = () => {
+        setWidth();
         document.body.classList.remove('_sitch_show');
         container.classList.remove('_sitch_show');
+        if (window.location.hash === '#sitch-embed') {          
+          window.history.back();
+        }
       };
+
+      dimmer.onclick = hideFunction;
 
       const startLoading = () => {
         container.classList.add('_sitch_loading');
@@ -172,8 +181,6 @@ export default (
         document.documentElement.style.setProperty('--_sitch_negative-max-content-width', `${maxWidthExistAndIsLessThanViewportWidth ? -1 * maxWidth + 'px' : '-100vw'}`);
       };
 
-      dimmer.onclick = toggleFunction;
-
       const appSize = () => {
         const width = globalScope.innerWidth > 0 ? globalScope.innerWidth : screen.width;
         if (maxWidth > width) {
@@ -181,6 +188,13 @@ export default (
         }
       };
 
+      const onBackNavigate = (event: any) => {
+        event.preventDefault();
+        event.stopPropagation();
+        hideFunction();
+      };
+
+      globalScope.addEventListener('popstate', onBackNavigate);
       globalScope.addEventListener('resize', appSize);
       globalScope.addEventListener(
         'message',
@@ -196,8 +210,7 @@ export default (
             case '_sitch_shrink':
               setWidth();
               break;
-            case '_sitch_close':
-              setWidth();
+            case '_sitch_close':              
               hideFunction();
               break;
             case '_sitch_loaded':
@@ -207,6 +220,7 @@ export default (
         },
         false
       );
+
       appSize();
 
       _sitch_reinitializeButtons = () => {
@@ -231,7 +245,7 @@ export default (
               alert('This button does not have the required Sitch fields.');
             }
           };
-          newButton.onclick = toggleFunction;
+          newButton.onclick = showFunction;
           newButton.onmouseover = prepareContent;
           newButton.onfocus = prepareContent;
         });
