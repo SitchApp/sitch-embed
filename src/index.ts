@@ -13,7 +13,7 @@ export default (
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
     _sitch_reinitializeButtons();
   } else {
-    const version = 8;
+    const version = 9;
     const globalScope: any = window;
     const initSitchWidget = () => {
       document.documentElement.style.setProperty('--_sitch_max-content-width', `100vw`);
@@ -240,6 +240,8 @@ export default (
               if (iframe.src !== newUrl) {
                 startLoading();
                 iframe.src = newUrl;
+              } else {
+                iframe.contentWindow?.postMessage('_sitch_resetEmbed', 'https://sitch.app');
               }
             } else {
               alert('This button does not have the required Sitch fields.');
