@@ -18,15 +18,11 @@ or if you're not using a package manager
 
 ## Usage
 
-So first you need to specify which buttons load a Sitch. You do this by adding the "sitch-activation-button" class to each relevant button. Then for each button you need to specify which Sitch it loads. You do this by adding a data attribute. There's two attributes for this:
+So first you need to specify which buttons load a Sitch. You do this by adding the "sitch-activation-button" class to each relevant button. Then for each button you need to specify which Sitch it loads. You do this by adding the following data attribute.
 
-### data-sitch-id
+### data-sitch-link
 
-Every Sitch has a Sitch ID that you can see when editing the Sitch at https://mysitch.app at the very top of the page. It will look something like "i4lVvZB". So to embed and use a Sitch with that ID using a button, you would add `data-sitch-id="i4lVvZB"` to that button.
-
-### data-sitch-custom-id
-
-You can optionally generate a custom link for a Sitch when editing it. the last part of that custom link is the Sitches custom ID. So for https://sitch.app/blog, "blog" is the custom id. So to embed and use a Sitch with that ID using a button, you would add `data-sitch-custom-id="blog"` to that button.
+Every Sitch has a unique link. You can get this link by selecting the Sitch on https://mysitch.app and pressing "Copy Link", or by editing the Sitch and viewing it at the top of the edit page. As an example, for Sitch link https://sitch.app/s/i4lVvZB, you would add `data-sitch-link="https://sitch.app/s/i4lVvZB"` to a button.
 
 There's currently one more attribute you can use to customize things:
 

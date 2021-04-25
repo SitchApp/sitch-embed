@@ -1,6 +1,6 @@
 {
   "name": "sitch-embed",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "For embedding Sitches made on mysitch.app into websites.",
   "main": "build/index.min.js",
   "types": "build",

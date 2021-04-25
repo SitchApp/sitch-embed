@@ -13,7 +13,7 @@ export default (
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
     _sitch_reinitializeButtons();
   } else {
-    const version = 9;
+    const version = 10;
     const globalScope: any = window;
     const initSitchWidget = () => {
       document.documentElement.style.setProperty('--_sitch_max-content-width', `100vw`);
@@ -147,7 +147,7 @@ export default (
       const showFunction = () => {
         document.body.classList.add('_sitch_show');
         container.classList.add('_sitch_show');
-        if (window.location.hash !== '#sitch-embed') {          
+        if (window.location.hash !== '#sitch-embed') {
           window.history.pushState('forward', '', './#sitch-embed');
         }
       };
@@ -156,7 +156,7 @@ export default (
         setWidth();
         document.body.classList.remove('_sitch_show');
         container.classList.remove('_sitch_show');
-        if (window.location.hash === '#sitch-embed') {          
+        if (window.location.hash === '#sitch-embed') {
           window.history.back();
         }
       };
@@ -171,9 +171,9 @@ export default (
         container.classList.remove('_sitch_loading');
       };
 
-      let sitchId: string;
-      let customId: string;
+      let sitchLink: string;
       let maxWidth: number;
+      let oldIframeUrl: string;
 
       const setWidth = () => {
         const maxWidthExistAndIsLessThanViewportWidth = Boolean(maxWidth && maxWidth < (globalScope.innerWidth > 0 ? globalScope.innerWidth : screen.width));
@@ -210,7 +210,7 @@ export default (
             case '_sitch_shrink':
               setWidth();
               break;
-            case '_sitch_close':              
+            case '_sitch_close':
               hideFunction();
               break;
             case '_sitch_loaded':
@@ -231,16 +231,16 @@ export default (
           button.parentNode.replaceChild(newButton, button);
           newButton.style.cursor = 'pointer';
           const prepareContent = () => {
-            sitchId = newButton.dataset.sitchId;
-            customId = newButton.dataset.sitchCustomId;
+            sitchLink = newButton.dataset.sitchLink;
             maxWidth = Number(newButton.dataset.sitchMaxWidth) || 0;
             setWidth();
-            if (iframe && (sitchId || customId)) {
-              const newUrl = customId ? `https://sitch.app/${customId}/?e=true&ew=${maxWidth}&v=${version}` : `https://sitch.app/s/${sitchId}/?e=true&ew=${maxWidth}&v=${version}`;
-              if (iframe.src !== newUrl) {
-                startLoading();
-                iframe.src = newUrl;
-              } else {
+            if (iframe && sitchLink) {
+              const newIframeUrl = `${sitchLink}/?e=true&ew=${maxWidth}&v=${version}`;              
+              if (oldIframeUrl !== newIframeUrl) {
+                oldIframeUrl = newIframeUrl;
+                startLoading();                                
+                iframe.contentWindow?.location.replace(newIframeUrl);
+              } else {                
                 iframe.contentWindow?.postMessage('_sitch_resetEmbed', 'https://sitch.app');
               }
             } else {
