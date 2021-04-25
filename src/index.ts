@@ -13,7 +13,7 @@ export default (
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
     _sitch_reinitializeButtons();
   } else {
-    const version = 10;
+    const version = 11;
     const globalScope: any = window;
     const initSitchWidget = () => {
       document.documentElement.style.setProperty('--_sitch_max-content-width', `100vw`);
@@ -147,6 +147,7 @@ export default (
       const showFunction = () => {
         document.body.classList.add('_sitch_show');
         container.classList.add('_sitch_show');
+        iframe?.contentWindow?.focus();
         if (window.location.hash !== '#sitch-embed') {
           window.history.pushState('forward', '', './#sitch-embed');
         }
@@ -234,15 +235,15 @@ export default (
             sitchLink = newButton.dataset.sitchLink;
             maxWidth = Number(newButton.dataset.sitchMaxWidth) || 0;
             setWidth();
-            if (iframe && sitchLink) {
-              const newIframeUrl = `${sitchLink}/?e=true&ew=${maxWidth}&v=${version}`;              
+            if (iframe && iframe.contentWindow && sitchLink) {
+              const newIframeUrl = `${sitchLink}/?e=true&ew=${maxWidth}&v=${version}`;
               if (oldIframeUrl !== newIframeUrl) {
                 oldIframeUrl = newIframeUrl;
-                startLoading();                                
-                iframe.contentWindow?.location.replace(newIframeUrl);
-              } else {                
-                iframe.contentWindow?.postMessage('_sitch_resetEmbed', 'https://sitch.app');
-              }
+                startLoading();
+                iframe.contentWindow.location.replace(newIframeUrl);
+              } else {
+                iframe.contentWindow.postMessage('_sitch_resetEmbed', 'https://sitch.app');
+              }              
             } else {
               alert('This button does not have the required Sitch fields.');
             }
