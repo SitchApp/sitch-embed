@@ -13,7 +13,7 @@ export default (
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
     _sitch_reinitializeButtons();
   } else {
-    const version = 14;
+    const version = 15;
     const globalScope: any = window;
     const initSitchWidget = () => {
       document.documentElement.style.setProperty('--_sitch_max-content-width', `100vw`);
@@ -28,7 +28,7 @@ export default (
           <div id="_sitch_loading-spinner-container">
             <div id="_sitch_loader">Loading...</div>
           </div>
-          <iframe id="_sitch_iframe" src="" allow="payment"></iframe>
+          <iframe id="_sitch_iframe" src="" allow="payment *"></iframe>
         </div>
       `;
       document.body.appendChild(sitchEmbedContainer);
