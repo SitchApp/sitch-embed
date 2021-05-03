@@ -13,7 +13,6 @@ export default (
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
     _sitch_reinitializeButtons();
   } else {
-    const version = 15;
     const globalScope: any = window;
     const initSitchWidget = () => {
       document.documentElement.style.setProperty('--_sitch_max-content-width', `100vw`);
@@ -246,7 +245,7 @@ export default (
             maxWidth = Number(newButton.dataset.sitchMaxWidth) || 0;
             setWidth();
             if (iframe && iframe.contentWindow && sitchLink) {
-              const newIframeUrl = `${sitchLink}/?e=true&ew=${maxWidth}&v=${version}`;
+              const newIframeUrl = `${sitchLink}/?e=true&ew=${maxWidth}&v=${Date.now()}`;
               if (oldIframeUrl !== newIframeUrl) {
                 oldIframeUrl = newIframeUrl;
                 startLoading();
