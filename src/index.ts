@@ -6,13 +6,14 @@ interface SitchOptions {
   onSitchActivationCallback: (hash: string, url: string) => void;
 }
 
-export default (
-  options: SitchOptions = {
-    baseZIndex: 999999,
-    preloadHash: '',
-    onSitchActivationCallback: () => undefined,
-  }
-) => {
+const baseOptions: SitchOptions = {
+  baseZIndex: 999999,
+  preloadHash: '',
+  onSitchActivationCallback: () => undefined,
+};
+
+export default (options: Partial<SitchOptions> | undefined = undefined) => {
+  const mergedOptions = Object.assign(baseOptions, options);
   if (_sitch_reinitializeButtons) {
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
     _sitch_reinitializeButtons();
@@ -50,7 +51,7 @@ export default (
           }
           #_sitch_full-screen-dimmer {
             position: absolute;
-            z-index: ${options.baseZIndex - 1};
+            z-index: ${mergedOptions.baseZIndex - 1};
             width: 100vw;
             height: 100vh;
             top: 0;
@@ -65,7 +66,7 @@ export default (
           #_sitch_iframe-container {
             background-color: #ededf7;
             transition: all 200ms ease-in;
-            z-index: ${options.baseZIndex};
+            z-index: ${mergedOptions.baseZIndex};
             position: fixed;
             top: 0;
             right: var(--_sitch_negative-max-content-width);
@@ -86,7 +87,7 @@ export default (
             position: absolute;
             width: 100%;
             height: 100%;
-            z-index: ${options.baseZIndex + 1};
+            z-index: ${mergedOptions.baseZIndex + 1};
             top: 0;
             left: 0;
             display: none;
@@ -241,7 +242,7 @@ export default (
             document.body.classList.add('_sitch_show');
             container.classList.add('_sitch_show');
             iframe?.contentWindow?.focus();
-            options.onSitchActivationCallback(hashLabel, iframe?.src || '');
+            mergedOptions.onSitchActivationCallback(hashLabel, iframe?.src || '');
             if (window.location.hash !== hashLabel) {
               window.history.pushState('forward', '', `./${hashLabel}`);
             }
@@ -276,10 +277,10 @@ export default (
 
           // If when Sitch was initialized the url contained a sitch-hash, open up that Sitch.
           // If none of the Sitches have a given hash, opening the page with the hash "sitch_embed" will just open up the first Sitch found in a Sitch button.
-          if (hashLabel && (window.location.hash === hashLabel || options.preloadHash === hashLabel)) {
+          if (hashLabel && (window.location.hash === hashLabel || mergedOptions.preloadHash === hashLabel)) {
             prepareSitch();
           }
-          if (hashLabel && (window.location.hash === hashLabel)) {
+          if (hashLabel && window.location.hash === hashLabel) {
             doNotNavigateBackOnClose = true;
             showSitch();
           }
