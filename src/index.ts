@@ -2,11 +2,15 @@ let _sitch_reinitializeButtons: null | (() => void) = null;
 
 interface SitchOptions {
   baseZIndex: number;
+  preloadHash: string;
+  onSitchActivationCallback: (hash: string, url: string) => void;
 }
 
 export default (
   options: SitchOptions = {
     baseZIndex: 999999,
+    preloadHash: '',
+    onSitchActivationCallback: () => undefined,
   }
 ) => {
   if (_sitch_reinitializeButtons) {
@@ -199,6 +203,7 @@ export default (
         'message',
         (event: MessageEvent) => {
           if (!['https://sitch.app', 'https://sitch-client-test.web.app/'].includes(event.origin)) {
+            endLoading();
             return;
           }
           switch (event.data) {
@@ -236,6 +241,7 @@ export default (
             document.body.classList.add('_sitch_show');
             container.classList.add('_sitch_show');
             iframe?.contentWindow?.focus();
+            options.onSitchActivationCallback(hashLabel, iframe?.src || '');
             if (window.location.hash !== hashLabel) {
               window.history.pushState('forward', '', `./${hashLabel}`);
             }
@@ -246,7 +252,12 @@ export default (
             maxWidth = Number(newButton.dataset.sitchMaxWidth) || 0;
             setWidth();
             if (iframe && iframe.contentWindow && sitchLink) {
-              const newIframeUrl = `${sitchLink}/?e=true&ew=${maxWidth}&v=${sessionId}`;
+              let newIframeUrl = '';
+              if (sitchLink.includes('?')) {
+                newIframeUrl = `${sitchLink}&e=true&ew=${maxWidth}&v=${sessionId}`;
+              } else {
+                newIframeUrl = `${sitchLink}/?e=true&ew=${maxWidth}&v=${sessionId}`;
+              }
               if (oldIframeUrl !== newIframeUrl) {
                 oldIframeUrl = newIframeUrl;
                 startLoading();
@@ -265,9 +276,11 @@ export default (
 
           // If when Sitch was initialized the url contained a sitch-hash, open up that Sitch.
           // If none of the Sitches have a given hash, opening the page with the hash "sitch_embed" will just open up the first Sitch found in a Sitch button.
-          if (window.location.hash === hashLabel) {
-            doNotNavigateBackOnClose = true;
+          if (hashLabel && (window.location.hash === hashLabel || options.preloadHash === hashLabel)) {
             prepareSitch();
+          }
+          if (hashLabel && (window.location.hash === hashLabel)) {
+            doNotNavigateBackOnClose = true;
             showSitch();
           }
         });
