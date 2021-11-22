@@ -4,6 +4,7 @@ interface SitchOptions {
   baseZIndex: number;
   preloadHash: string;
   backgroundColor: string;
+  testingMode: 'prod' | 'staging' | 'local';
   onSitchActivationCallback: (hash: string, url: string) => void;
 }
 
@@ -11,6 +12,7 @@ const baseOptions: SitchOptions = {
   baseZIndex: 999999,
   preloadHash: '',
   backgroundColor: 'none',
+  testingMode: 'prod',
   onSitchActivationCallback: () => undefined,
 };
 
@@ -23,9 +25,21 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
     let initialHashLoadHappened = false;
     const sessionId = Date.now();
     const globalScope: any = window;
+    let baseUrl = '';
     const initSitchWidget = () => {
       document.documentElement.style.setProperty('--_sitch_max-content-width', `100vw`);
       document.documentElement.style.setProperty('--_sitch_negative-max-content-width', `-100vw`);
+      switch (mergedOptions.testingMode) {
+        case 'prod':
+          baseUrl = 'https://sitch.app';
+          break;
+        case 'staging':
+          baseUrl = 'https://sitch-client-test.web.app';
+          break;
+        case 'local':
+          baseUrl = 'http://localhost:8081';
+          break;
+      }
 
       // Adding the html
       const sitchEmbedContainer = document.createElement('div');
@@ -36,7 +50,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
           <div id="_sitch_loading-spinner-container">
             <div id="_sitch_loader">Loading...</div>
           </div>
-          <iframe id="_sitch_iframe" src="" allow="payment *"></iframe>
+          <iframe id="_sitch_iframe" src="${baseUrl}/?e=true&v=${sessionId}" allow="payment *"></iframe>
         </div>
       `;
       document.body.appendChild(sitchEmbedContainer);
@@ -149,8 +163,12 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
       const iframe = document.getElementById('_sitch_iframe') as HTMLIFrameElement | null;
       const sitchHashes: string[] = [];
 
-      if (!container || !dimmer) {
+      if (!container || !dimmer || !iframe?.contentWindow) {
         return;
+      }
+
+      if (mergedOptions.backgroundColor) {
+        iframe.contentWindow.document.body.style.backgroundColor = mergedOptions.backgroundColor;
       }
 
       const hideSitch = () => {
@@ -178,7 +196,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
 
       let sitchLink: string;
       let maxWidth: number;
-      let oldIframeUrl: string;
+      let oldSitchUrl: string;
       let doNotNavigateBackOnClose = false;
 
       const setWidth = () => {
@@ -206,7 +224,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
       globalScope.addEventListener(
         'message',
         (event: MessageEvent) => {
-          if (!['https://sitch.app', 'https://sitch-client-test.web.app/'].includes(event.origin)) {
+          if (!['https://sitch.app', 'https://sitch-client-test.web.app/', 'http://localhost:8081'].includes(event.origin)) {
             endLoading();
             return;
           }
@@ -232,10 +250,11 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
       _sitch_initializeButtons = () => {
         const sitchActivationButtons = document.querySelectorAll(`.sitch-activation-button`);
         sitchActivationButtons.forEach((button: any) => {
-          if (button.initializedBySitch){ // Don't bother initializing buttons that have already been initialized.
+          if (button._sitch_initialized) {
+            // Don't bother initializing buttons that have already been initialized.
             return;
           }
-          button.initializedBySitch = true;
+          button._sitch_initialized = true;
           button.style.cursor = 'pointer';
           const hashLabel = `#${button.dataset.sitchHash || 'sitch_embed'}`;
           if (!sitchHashes.includes(hashLabel)) {
@@ -257,23 +276,25 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
             sitchLink = button.dataset.sitchLink;
             maxWidth = Number(button.dataset.sitchMaxWidth) || 0;
             setWidth();
-            if (iframe && iframe.contentWindow && sitchLink) {
-              let newIframeUrl = '';
-              const restOfQueryString = `&ew=${maxWidth}&bgc=${mergedOptions.backgroundColor}&v=${sessionId}`;
-              if (sitchLink.includes('?')) {
-                newIframeUrl = `${sitchLink}&e=true${restOfQueryString}`;
-              } else {
-                newIframeUrl = `${sitchLink}/?e=true${restOfQueryString}`;
-              }
+            if (iframe.contentWindow && sitchLink) {
+              let newSitchUrl = '';
+              const restOfQueryString = `&ew=${maxWidth}&bgc=${mergedOptions.backgroundColor}`;
 
-              // if (oldIframeUrl !== newIframeUrl) {
-                // oldIframeUrl = newIframeUrl;
-                startLoading();
-                // iframe.contentWindow.postMessage('_sitch_resetEmbed', '*');
-                iframe.contentWindow.location.replace(newIframeUrl);
-              // } else {
-                // iframe.contentWindow.postMessage('_sitch_resetEmbed', '*');
-              // }
+              if (sitchLink.includes('?')) {
+                newSitchUrl = `${sitchLink}&e=true${restOfQueryString}`;
+              } else {
+                newSitchUrl = `${sitchLink}/?e=true${restOfQueryString}`;
+              }
+              if (oldSitchUrl !== newSitchUrl) {
+                oldSitchUrl = newSitchUrl;
+                iframe.contentWindow.postMessage(
+                  {
+                    _sitch_messageType: '_sitch_newSitchUrl',
+                    value: newSitchUrl,
+                  },
+                  '*'
+                );
+              }
             } else {
               alert('This button does not have the required Sitch fields.');
             }
@@ -288,16 +309,16 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
           if (!initialHashLoadHappened) {
             if (hashLabel && (window.location.hash === hashLabel || mergedOptions.preloadHash === hashLabel)) {
               prepareSitch();
-              initialHashLoadHappened = true;
-            }
-            if (hashLabel && window.location.hash === hashLabel) {
-              doNotNavigateBackOnClose = true;
-              showSitch();
+              if (window.location.hash === hashLabel) {
+                doNotNavigateBackOnClose = true;
+                showSitch();
+              }
               initialHashLoadHappened = true;
             }
           }
         });
       };
+      startLoading(); // Start loading for the initial load of the prepped Sitch app.
       _sitch_initializeButtons();
     };
 
