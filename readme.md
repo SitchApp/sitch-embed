@@ -53,6 +53,10 @@ If you're not using a package manager you would just call `initializeSitchButton
 
 You can provide a z-index for the embedded Sitches. So to make the Sitches use z-index 1000 you would write `initializeSitchButtons({baseZIndex: 1000})`.
 
+### backgroundColor (default: 'none')
+
+A background color to show before the Sitch's theme is initialized and rendered. You would want this color to match your theme background to make the color shift less jarring. Example: `initializeSitchButtons({backgroundColor: '#000'})`.
+
 ## Caveats
 
 `initializeSitchButtons()` must be called after the Sitch buttons are mounted in the DOM. If your DOM dynamically changes you'll have to re-execute the function any time new Sitch buttons are constructed.

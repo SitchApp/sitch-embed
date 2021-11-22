@@ -1,23 +1,26 @@
-let _sitch_reinitializeButtons: null | (() => void) = null;
+let _sitch_initializeButtons: null | (() => void) = null;
 
 interface SitchOptions {
   baseZIndex: number;
   preloadHash: string;
+  backgroundColor: string;
   onSitchActivationCallback: (hash: string, url: string) => void;
 }
 
 const baseOptions: SitchOptions = {
   baseZIndex: 999999,
   preloadHash: '',
+  backgroundColor: 'none',
   onSitchActivationCallback: () => undefined,
 };
 
 export default (options: Partial<SitchOptions> | undefined = undefined) => {
   const mergedOptions = Object.assign(baseOptions, options);
-  if (_sitch_reinitializeButtons) {
+  if (_sitch_initializeButtons) {
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
-    _sitch_reinitializeButtons();
+    _sitch_initializeButtons();
   } else {
+    let initialHashLoadHappened = false;
     const sessionId = Date.now();
     const globalScope: any = window;
     const initSitchWidget = () => {
@@ -226,19 +229,21 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
         false
       );
 
-      _sitch_reinitializeButtons = () => {
+      _sitch_initializeButtons = () => {
         const sitchActivationButtons = document.querySelectorAll(`.sitch-activation-button`);
         sitchActivationButtons.forEach((button: any) => {
-          // Replacing the buttons to scrub any listensers.
-          const newButton = button.cloneNode(true);
-          button.parentNode.replaceChild(newButton, button);
-          newButton.style.cursor = 'pointer';
-          const hashLabel = `#${newButton.dataset.sitchHash || 'sitch_embed'}`;
+          if (button.initializedBySitch){ // Don't bother initializing buttons that have already been initialized.
+            return;
+          }
+          button.initializedBySitch = true;
+          button.style.cursor = 'pointer';
+          const hashLabel = `#${button.dataset.sitchHash || 'sitch_embed'}`;
           if (!sitchHashes.includes(hashLabel)) {
             sitchHashes.push(hashLabel);
           }
 
           const showSitch = () => {
+            prepareSitch(); // We need this since mouseover/focus may not always trigger before a click on mobile.
             document.body.classList.add('_sitch_show');
             container.classList.add('_sitch_show');
             iframe?.contentWindow?.focus();
@@ -249,44 +254,51 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
           };
 
           const prepareSitch = () => {
-            sitchLink = newButton.dataset.sitchLink;
-            maxWidth = Number(newButton.dataset.sitchMaxWidth) || 0;
+            sitchLink = button.dataset.sitchLink;
+            maxWidth = Number(button.dataset.sitchMaxWidth) || 0;
             setWidth();
             if (iframe && iframe.contentWindow && sitchLink) {
               let newIframeUrl = '';
+              const restOfQueryString = `&ew=${maxWidth}&bgc=${mergedOptions.backgroundColor}&v=${sessionId}`;
               if (sitchLink.includes('?')) {
-                newIframeUrl = `${sitchLink}&e=true&ew=${maxWidth}&v=${sessionId}`;
+                newIframeUrl = `${sitchLink}&e=true${restOfQueryString}`;
               } else {
-                newIframeUrl = `${sitchLink}/?e=true&ew=${maxWidth}&v=${sessionId}`;
+                newIframeUrl = `${sitchLink}/?e=true${restOfQueryString}`;
               }
-              if (oldIframeUrl !== newIframeUrl) {
-                oldIframeUrl = newIframeUrl;
+
+              // if (oldIframeUrl !== newIframeUrl) {
+                // oldIframeUrl = newIframeUrl;
                 startLoading();
+                // iframe.contentWindow.postMessage('_sitch_resetEmbed', '*');
                 iframe.contentWindow.location.replace(newIframeUrl);
-              } else {
-                iframe.contentWindow.postMessage('_sitch_resetEmbed', '*');
-              }
+              // } else {
+                // iframe.contentWindow.postMessage('_sitch_resetEmbed', '*');
+              // }
             } else {
               alert('This button does not have the required Sitch fields.');
             }
           };
 
-          newButton.onclick = showSitch;
-          newButton.onmouseover = prepareSitch;
-          newButton.onfocus = prepareSitch;
+          button.onclick = showSitch;
+          button.onmouseover = prepareSitch;
+          button.onfocus = prepareSitch;
 
           // If when Sitch was initialized the url contained a sitch-hash, open up that Sitch.
           // If none of the Sitches have a given hash, opening the page with the hash "sitch_embed" will just open up the first Sitch found in a Sitch button.
-          if (hashLabel && (window.location.hash === hashLabel || mergedOptions.preloadHash === hashLabel)) {
-            prepareSitch();
-          }
-          if (hashLabel && window.location.hash === hashLabel) {
-            doNotNavigateBackOnClose = true;
-            showSitch();
+          if (!initialHashLoadHappened) {
+            if (hashLabel && (window.location.hash === hashLabel || mergedOptions.preloadHash === hashLabel)) {
+              prepareSitch();
+              initialHashLoadHappened = true;
+            }
+            if (hashLabel && window.location.hash === hashLabel) {
+              doNotNavigateBackOnClose = true;
+              showSitch();
+              initialHashLoadHappened = true;
+            }
           }
         });
       };
-      _sitch_reinitializeButtons();
+      _sitch_initializeButtons();
     };
 
     if (document.readyState !== 'loading') {
