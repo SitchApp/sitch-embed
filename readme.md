@@ -55,7 +55,7 @@ You can provide a z-index for the embedded Sitches. So to make the Sitches use z
 
 ### backgroundColor (default: 'none')
 
-A background color to show before the Sitch's theme is initialized and rendered. You would want this color to match your theme background to make the color shift less jarring. Example: `initializeSitchButtons({backgroundColor: '#000'})`.
+A background color to show before the Sitch's theme is initialized and rendered. This is really only relevant if a Sitch is being shown on page load using data-sitch-hash or if the user opens a Sitch very very quickly after page load. You would want this color to match your theme background to make the color shift less jarring. Example: `initializeSitchButtons({backgroundColor: '#000'})`.
 
 ## Caveats
 

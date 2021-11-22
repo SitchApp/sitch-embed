@@ -2,7 +2,6 @@ let _sitch_initializeButtons: null | (() => void) = null;
 
 interface SitchOptions {
   baseZIndex: number;
-  preloadHash: string;
   backgroundColor: string;
   testingMode: 'prod' | 'staging' | 'local';
   onSitchActivationCallback: (hash: string, url: string) => void;
@@ -10,8 +9,7 @@ interface SitchOptions {
 
 const baseOptions: SitchOptions = {
   baseZIndex: 999999,
-  preloadHash: '',
-  backgroundColor: 'none',
+  backgroundColor: '',
   testingMode: 'prod',
   onSitchActivationCallback: () => undefined,
 };
@@ -50,7 +48,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
           <div id="_sitch_loading-spinner-container">
             <div id="_sitch_loader">Loading...</div>
           </div>
-          <iframe id="_sitch_iframe" src="${baseUrl}/?e=true&v=${sessionId}" allow="payment *"></iframe>
+          <iframe id="_sitch_iframe" src="${baseUrl}/?e=true&bgc=${mergedOptions.backgroundColor}&v=${sessionId}" allow="payment *"></iframe>
         </div>
       `;
       document.body.appendChild(sitchEmbedContainer);
@@ -186,11 +184,11 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
 
       dimmer.onclick = hideSitch;
 
-      const startLoading = () => {
+      const showLoading = () => {
         container.classList.add('_sitch_loading');
       };
 
-      const endLoading = () => {
+      const hideLoading = () => {
         container.classList.remove('_sitch_loading');
       };
 
@@ -219,34 +217,6 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
       };
       onAppResize();
 
-      globalScope.addEventListener('popstate', onPopState);
-      globalScope.addEventListener('resize', onAppResize);
-      globalScope.addEventListener(
-        'message',
-        (event: MessageEvent) => {
-          if (!['https://sitch.app', 'https://sitch-client-test.web.app/', 'http://localhost:8081'].includes(event.origin)) {
-            endLoading();
-            return;
-          }
-          switch (event.data) {
-            case '_sitch_fullscreen':
-              document.documentElement.style.setProperty('--_sitch_max-content-width', '100vw');
-              document.documentElement.style.setProperty('--_sitch_negative-max-content-width', '100vw');
-              break;
-            case '_sitch_shrink':
-              setWidth();
-              break;
-            case '_sitch_close':
-              hideSitch();
-              break;
-            case '_sitch_loaded':
-              endLoading();
-              break;
-          }
-        },
-        false
-      );
-
       _sitch_initializeButtons = () => {
         const sitchActivationButtons = document.querySelectorAll(`.sitch-activation-button`);
         sitchActivationButtons.forEach((button: any) => {
@@ -262,23 +232,16 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
           }
 
           const showSitch = () => {
-            prepareSitch(); // We need this since mouseover/focus may not always trigger before a click on mobile.
-            document.body.classList.add('_sitch_show');
-            container.classList.add('_sitch_show');
-            iframe?.contentWindow?.focus();
-            mergedOptions.onSitchActivationCallback(hashLabel, iframe?.src || '');
-            if (window.location.hash !== hashLabel) {
-              window.history.pushState('forward', '', `./${hashLabel}`);
-            }
-          };
-
-          const prepareSitch = () => {
             sitchLink = button.dataset.sitchLink;
             maxWidth = Number(button.dataset.sitchMaxWidth) || 0;
             setWidth();
-            if (iframe.contentWindow && sitchLink) {
+            if (!iframe.contentWindow) {
+              console.error('Sitch Embed: iframe content window was not ready for initialization.');
+              return;
+            }
+            if (sitchLink) {
               let newSitchUrl = '';
-              const restOfQueryString = `&ew=${maxWidth}&bgc=${mergedOptions.backgroundColor}`;
+              const restOfQueryString = `&ew=${maxWidth}`;
 
               if (sitchLink.includes('?')) {
                 newSitchUrl = `${sitchLink}&e=true${restOfQueryString}`;
@@ -286,6 +249,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
                 newSitchUrl = `${sitchLink}/?e=true${restOfQueryString}`;
               }
               if (oldSitchUrl !== newSitchUrl) {
+                showLoading();
                 oldSitchUrl = newSitchUrl;
                 iframe.contentWindow.postMessage(
                   {
@@ -298,28 +262,61 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
             } else {
               alert('This button does not have the required Sitch fields.');
             }
+            document.body.classList.add('_sitch_show');
+            container.classList.add('_sitch_show');
+            iframe?.contentWindow?.focus();
+            mergedOptions.onSitchActivationCallback(hashLabel, iframe?.src || '');
+            if (window.location.hash !== hashLabel) {
+              window.history.pushState('forward', '', `./${hashLabel}`);
+            }
           };
 
           button.onclick = showSitch;
-          button.onmouseover = prepareSitch;
-          button.onfocus = prepareSitch;
 
           // If when Sitch was initialized the url contained a sitch-hash, open up that Sitch.
           // If none of the Sitches have a given hash, opening the page with the hash "sitch_embed" will just open up the first Sitch found in a Sitch button.
           if (!initialHashLoadHappened) {
-            if (hashLabel && (window.location.hash === hashLabel || mergedOptions.preloadHash === hashLabel)) {
-              prepareSitch();
-              if (window.location.hash === hashLabel) {
-                doNotNavigateBackOnClose = true;
-                showSitch();
-              }
+            if (window.location.hash === hashLabel) {
+              doNotNavigateBackOnClose = true;
               initialHashLoadHappened = true;
+              showSitch();
             }
           }
         });
       };
-      startLoading(); // Start loading for the initial load of the prepped Sitch app.
-      _sitch_initializeButtons();
+
+      globalScope.addEventListener('popstate', onPopState);
+      globalScope.addEventListener('resize', onAppResize);
+      globalScope.addEventListener(
+        'message',
+        (event: MessageEvent) => {
+          console.log('event.origin', event.origin);
+          if (!['https://sitch.cards', 'https://sitch.app', 'https://sitch-client-test.web.app', 'http://localhost:8081'].includes(event.origin)) {
+            return;
+          }
+          switch (event.data) {
+            case '_sitch_fullscreen':
+              document.documentElement.style.setProperty('--_sitch_max-content-width', '100vw');
+              document.documentElement.style.setProperty('--_sitch_negative-max-content-width', '100vw');
+              break;
+            case '_sitch_shrink':
+              setWidth();
+              break;
+            case '_sitch_close':
+              hideSitch();
+              break;
+            case '_sitch_loaded':
+              hideLoading();
+              break;
+            case '_sitch_mounted':
+              if (_sitch_initializeButtons) {
+                _sitch_initializeButtons();
+              }
+              break;
+          }
+        },
+        false
+      );
     };
 
     if (document.readyState !== 'loading') {
