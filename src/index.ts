@@ -290,7 +290,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
       globalScope.addEventListener(
         'message',
         (event: MessageEvent) => {
-          if (!['https://sitch.cards', 'https://sitch.app', 'https://sitch-client-test.web.app', 'http://localhost:8081'].includes(event.origin)) {
+          if (!['https://sitch.app', 'https://sitch-client-test.web.app', 'http://localhost:8081'].includes(event.origin)) {
             return;
           }
           switch (event.data) {
