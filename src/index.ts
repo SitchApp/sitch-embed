@@ -1,4 +1,5 @@
 let _sitch_initializeButtons: null | (() => void) = null;
+let _sitch_appMounted = false;
 
 interface SitchOptions {
   baseZIndex: number;
@@ -18,13 +19,19 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
   const mergedOptions = Object.assign(baseOptions, options);
   if (_sitch_initializeButtons) {
     // In this case Sitch has already been initialized and we just have to initialize any new buttons.
-    _sitch_initializeButtons();
+    if (_sitch_appMounted) {
+      /*
+      Only do this if the app is mounted. If it's not then _sitch_initializeButtons will be run once it's mounted and we must forgo running it here.
+      Do not add this to the if above. We want nothing to happen if the initialize buttons function exists but the app is not yet mounted.
+      */
+      _sitch_initializeButtons();
+    }
   } else {
     let initialHashLoadHappened = false;
     const sessionId = Date.now();
     const globalScope: any = window;
     let baseUrl = '';
-    const initSitchWidget = () => {
+    const initSitchPlugin = () => {
       document.documentElement.style.setProperty('--_sitch_max-content-width', `100vw`);
       document.documentElement.style.setProperty('--_sitch_negative-max-content-width', `-100vw`);
       switch (mergedOptions.testingMode) {
@@ -48,7 +55,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
           <div id="_sitch_loading-spinner-container">
             <div id="_sitch_loader">Loading...</div>
           </div>
-          <iframe id="_sitch_iframe" src="${baseUrl}/?e=true&bgc=${mergedOptions.backgroundColor}&v=${sessionId}" allow="payment *"></iframe>
+          <iframe id="_sitch_iframe" src="${baseUrl}/?e=true&bgc=${mergedOptions.backgroundColor.replace(/#/g, '%23')}&v=${sessionId}" allow="payment *"></iframe>
         </div>
       `;
       document.body.appendChild(sitchEmbedContainer);
@@ -162,6 +169,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
       const sitchHashes: string[] = [];
 
       if (!container || !dimmer || !iframe?.contentWindow) {
+        console.error('Sitch Embed: container iframe content window was not ready for initialization.');
         return;
       }
 
@@ -194,7 +202,6 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
 
       let sitchLink: string;
       let maxWidth: number;
-      let oldSitchUrl: string;
       let doNotNavigateBackOnClose = false;
 
       const setWidth = () => {
@@ -248,26 +255,30 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
               } else {
                 newSitchUrl = `${sitchLink}/?e=true${restOfQueryString}`;
               }
-              if (oldSitchUrl !== newSitchUrl) {
-                showLoading();
-                oldSitchUrl = newSitchUrl;
-                iframe.contentWindow.postMessage(
-                  {
-                    _sitch_messageType: '_sitch_newSitchUrl',
-                    value: newSitchUrl,
-                  },
-                  '*'
-                );
+
+              // When this button is clicked we have to execute the callback.
+              mergedOptions.onSitchActivationCallback(hashLabel, newSitchUrl || '');
+
+              // If the current hash does not correspond to this button, udpate it.
+              if (window.location.hash !== hashLabel) {
+                window.history.pushState('forward', '', `./${hashLabel}`);
               }
+
+              document.body.classList.add('_sitch_show');
+              container.classList.add('_sitch_show');
+
+              iframe.contentWindow.focus();
+              iframe.contentWindow.postMessage(
+                {
+                  _sitch_messageType: '_sitch_newSitchUrl',
+                  value: newSitchUrl,
+                },
+                '*'
+              );
+
+              showLoading(); // Show loading since we're updating the Sitch.
             } else {
               alert('This button does not have the required Sitch fields.');
-            }
-            document.body.classList.add('_sitch_show');
-            container.classList.add('_sitch_show');
-            iframe?.contentWindow?.focus();
-            mergedOptions.onSitchActivationCallback(hashLabel, iframe?.src || '');
-            if (window.location.hash !== hashLabel) {
-              window.history.pushState('forward', '', `./${hashLabel}`);
             }
           };
 
@@ -275,12 +286,10 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
 
           // If when Sitch was initialized the url contained a sitch-hash, open up that Sitch.
           // If none of the Sitches have a given hash, opening the page with the hash "sitch_embed" will just open up the first Sitch found in a Sitch button.
-          if (!initialHashLoadHappened) {
-            if (window.location.hash === hashLabel) {
-              doNotNavigateBackOnClose = true;
-              initialHashLoadHappened = true;
-              showSitch();
-            }
+          if (!initialHashLoadHappened && window.location.hash === hashLabel) {
+            doNotNavigateBackOnClose = true;
+            initialHashLoadHappened = true;
+            showSitch();
           }
         });
       };
@@ -308,9 +317,13 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
               hideLoading();
               break;
             case '_sitch_mounted':
+              _sitch_appMounted = true;
               if (_sitch_initializeButtons) {
                 _sitch_initializeButtons();
               }
+              break;
+            default:
+              console.log(event.data);
               break;
           }
         },
@@ -319,10 +332,10 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
     };
 
     if (document.readyState !== 'loading') {
-      initSitchWidget();
+      initSitchPlugin();
     } else {
       document.addEventListener('DOMContentLoaded', () => {
-        initSitchWidget();
+        initSitchPlugin();
       });
     }
   }
