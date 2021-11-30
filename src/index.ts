@@ -5,7 +5,9 @@ interface SitchOptions {
   baseZIndex: number;
   backgroundColor: string;
   testingMode: 'prod' | 'staging' | 'local';
-  onSitchActivationCallback: (hash: string, url: string) => void;
+  onSitchActivationCallback: (object: { hash: string; url: string }) => void;
+  onAddToCartCallback: (object: { amount: string; currency: string; addedOrderItem: any; }) => void;
+  onPaymentCallback: (object: { amount: string; currency: string; orderBreakdown: any; }) => void;
 }
 
 const baseOptions: SitchOptions = {
@@ -13,6 +15,8 @@ const baseOptions: SitchOptions = {
   backgroundColor: '',
   testingMode: 'prod',
   onSitchActivationCallback: () => undefined,
+  onAddToCartCallback: () => undefined,
+  onPaymentCallback: () => undefined,
 };
 
 export default (options: Partial<SitchOptions> | undefined = undefined) => {
@@ -190,7 +194,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
               }
 
               // When this button is clicked we have to execute the callback.
-              mergedOptions.onSitchActivationCallback(hashLabel, newSitchUrl || '');
+              mergedOptions.onSitchActivationCallback({ hash: hashLabel, url: newSitchUrl || '' });
 
               // If the current hash does not correspond to this button, udpate it.
               if (window.location.hash !== hashLabel) {
@@ -233,26 +237,37 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
           if (!['https://sitch.app', 'https://sitch-client-test.web.app', 'http://localhost:8081'].includes(event.origin)) {
             return;
           }
-          switch (event.data) {
-            case '_sitch_fullscreen':
-              document.documentElement.style.setProperty('--_sitch_max-content-width', '100vw');
-              document.documentElement.style.setProperty('--_sitch_negative-max-content-width', '100vw');
-              break;
-            case '_sitch_shrink':
-              setWidth();
-              break;
-            case '_sitch_close':
-              hideSitch();
-              break;
-            case '_sitch_mounted':
-              _sitch_appMounted = true;
-              if (_sitch_initializeButtons) {
-                _sitch_initializeButtons();
-              }
-              break;
-            default:
-              console.log(event.data);
-              break;
+          if (event.data._sitch_messageType) {
+            switch (event.data._sitch_messageType) {
+              case '_sitch_addToCartConversion':
+                mergedOptions.onAddToCartCallback({ amount: event.data.amount, currency: event.data.currency, addedOrderItem: event.data.addedOrderItem });
+                break;
+              case '_sitch_paymentConversion':
+                mergedOptions.onPaymentCallback({ amount: event.data.amount, currency: event.data.currency, orderBreakdown: event.data.orderBreakdown });
+                break;
+            }
+          } else if (typeof event.data === 'string') {
+            switch (event.data) {
+              case '_sitch_fullscreen':
+                document.documentElement.style.setProperty('--_sitch_max-content-width', '100vw');
+                document.documentElement.style.setProperty('--_sitch_negative-max-content-width', '100vw');
+                break;
+              case '_sitch_shrink':
+                setWidth();
+                break;
+              case '_sitch_close':
+                hideSitch();
+                break;
+              case '_sitch_mounted':
+                _sitch_appMounted = true;
+                if (_sitch_initializeButtons) {
+                  _sitch_initializeButtons();
+                }
+                break;
+              default:
+                console.log(event.data);
+                break;
+            }
           }
         },
         false

@@ -1,4 +1,3 @@
-
 ## What is it?
 
 This package lets you use embedded Sitches on your website. Sitches are functionality focused web pages that you can build on https://mysitch.app. You can learn more about what they're for at https://sitch.cards.
@@ -10,9 +9,11 @@ The blog, store, and contact form on https://sitch.cards are all embedded Sitche
 ## Installation
 
     yarn add sitch-embed
+
 or
 
     npm add sitch-embed
+
 or if you're not using a package manager
 
     <script src="https://storage.googleapis.com/sitch-public/sitch-embed.js"></script>
@@ -33,7 +34,7 @@ Use this to determine how far in the embedded Sitch will slide in from the right
 
 ### data-sitch-hash
 
-To make the Sitches behave like proper webpages on your site you can add this data attribute to give them a hash addresses.  For example, a Sitch button on https://sitch.cards has `data-sitch-hash="store"` on it, so if you visit https://sitch.cards/#store the store opens right away . Make sure any hash addresses you use are unique and aren't used as HTML "id" values on any elements on your page.
+To make the Sitches behave like proper webpages on your site you can add this data attribute to give them a hash addresses. For example, a Sitch button on https://sitch.cards has `data-sitch-hash="store"` on it, so if you visit https://sitch.cards/#store the store opens right away . Make sure any hash addresses you use are unique and aren't used as HTML "id" values on any elements on your page.
 
 Finally to activate the buttons you would import the library:
 
@@ -56,6 +57,44 @@ You can provide a z-index for the embedded Sitches. So to make the Sitches use z
 ### backgroundColor (default: '')
 
 A background color to show before the Sitch's theme is initialized and rendered. This is really only relevant if a Sitch is being shown on page load using data-sitch-hash or if the user opens a Sitch very very quickly after page load. You would want this color to match your theme background to make the color shift less jarring. Example: `initializeSitchButtons({backgroundColor: '#000'})`.
+
+### onSitchActivationCallback (default: () => undefined)
+
+The function provided here will execute when a Sitch acivation button is clicked. An object of following structure is passed as an argument: { hash: string; url: string }.
+
+Example:
+
+```
+onSitchActivationCallback: ({ hash, url }) => {
+    if (hash === '#store' || url === 'sitch.app/store') {
+        console.log('Someone viewed the store.')
+    }
+},
+```
+
+### onAddToCartCallback (default: () => undefined)
+
+The function provided here will execute when an item is added to the cart of a Shop Sitch. An object of following structure is passed as an argument: { amount: string; currency: string }. The amount is always an integer. For example, in USD an amount of 1 is 1 cent, and 100 is a dollar.
+
+Example:
+
+```
+onAddToCartCallback({ amount, currency }) {
+    console.log(`Reporting add to cart of amount ${amount} in ${currency}.`)
+},
+```
+
+### onPaymentCallback (default: () => undefined)
+
+The function provided here will execute when a payment is made either to a Shop Sitch or a Business Payment Sitch. An object of following structure is passed as an argument: { amount: string; currency: string }. The amount is always an integer. For example, in USD an amount of 1 is 1 cent, and 100 is a dollar.
+
+Example:
+
+```
+onPaymentCallback({ amount, currency }) {
+    console.log(`Reporting payment of amount ${amount} in ${currency}.`)
+},
+```
 
 ## Caveats
 
