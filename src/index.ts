@@ -240,10 +240,10 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
           if (event.data._sitch_messageType) {
             switch (event.data._sitch_messageType) {
               case '_sitch_addToCartConversion':
-                mergedOptions.onAddToCartCallback({ amount: event.data.amount, currency: event.data.currency, addedOrderItem: event.data.addedOrderItem });
+                mergedOptions.onAddToCartCallback({ amount: event.data.amount, currency: event.data.currency?.toLowerCase(), addedOrderItem: event.data.addedOrderItem });
                 break;
               case '_sitch_paymentConversion':
-                mergedOptions.onPaymentCallback({ amount: event.data.amount, currency: event.data.currency, orderBreakdown: event.data.orderBreakdown });
+                mergedOptions.onPaymentCallback({ amount: event.data.amount, currency: event.data.currency?.toLowerCase(), orderBreakdown: event.data.orderBreakdown });
                 break;
             }
           } else if (typeof event.data === 'string') {
