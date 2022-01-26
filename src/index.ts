@@ -2,15 +2,15 @@ let _sitch_initializeButtons: null | (() => void) = null;
 let _sitch_appMounted = false;
 
 interface SitchOptions {
-  baseZIndex: number;
-  backgroundColor: string;
-  testingMode: 'prod' | 'staging' | 'local';
-  onSitchActivationCallback: (object: { hash: string; url: string }) => void;
-  onAddToCartCallback: (object: { amount: string; currency: string; addedOrderItem: any; }) => void;
-  onPaymentCallback: (object: { amount: string; currency: string; orderBreakdown: any; }) => void;
+  baseZIndex?: number;
+  backgroundColor?: string;
+  testingMode?: 'prod' | 'staging' | 'local';
+  onSitchActivationCallback?: (object: { hash?: string; url?: string }) => void;
+  onAddToCartCallback?: (object: { amount?: string; currency?: string; addedOrderItem?: any; }) => void;
+  onPaymentCallback?: (object: { amount?: string; currency?: string; orderBreakdown?: any; }) => void;
 }
 
-const baseOptions: SitchOptions = {
+const baseOptions = {
   baseZIndex: 999999,
   backgroundColor: '',
   testingMode: 'prod',

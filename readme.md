@@ -79,7 +79,7 @@ The function provided here will execute when an item is added to the cart of a S
 Example:
 
 ```
-onAddToCartCallback({ amount, currency }) {
+onAddToCartCallback: ({ amount, currency }) => {
     console.log(`Reporting add to cart of amount ${amount} in ${currency}.`)
 },
 ```
@@ -91,7 +91,7 @@ The function provided here will execute when a payment is made either to a Shop 
 Example:
 
 ```
-onPaymentCallback({ amount, currency }) {
+onPaymentCallback: ({ amount, currency }) => {
     console.log(`Reporting payment of amount ${amount} in ${currency}.`)
 },
 ```
