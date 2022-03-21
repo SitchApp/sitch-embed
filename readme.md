@@ -48,7 +48,7 @@ If you're not using a package manager you would just call `initializeSitchButton
 
 ## Options
 
-`initializeSitchButtons` takes single argument for an options object. Current there's just one option.
+`initializeSitchButtons` takes single argument for an options object.
 
 ### baseZIndex (default: 999999)
 

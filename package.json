@@ -1,11 +1,12 @@
 {
   "name": "sitch-embed",
-  "version": "1.0.32",
+  "version": "1.0.34",
   "description": "For embedding Sitches made on mysitch.app into websites.",
   "main": "build/index.min.js",
   "types": "build",
   "scripts": {
-    "build": "tsc -p . && minify build/index.js > build/index.min.js"
+    "build": "tsc -p . && minify build/index.js > build/index.min.js",
+    "publish": "npm publish"
   },
   "keywords": [
     "sitch",
