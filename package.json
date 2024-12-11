@@ -1,6 +1,6 @@
 {
   "name": "sitch-embed",
-  "version": "1.0.35",
+  "version": "1.0.40",
   "description": "For embedding Sitches made on mysitch.app into websites.",
   "main": "build/index.min.js",
   "types": "build",
@@ -16,7 +16,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SitchApp/sitch-embed"
+    "url": "git+https://github.com/SitchApp/sitch-embed.git"
   },
   "bugs": {
     "url": "https://github.com/SitchApp/sitch-embed/issues"

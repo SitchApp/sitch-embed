@@ -6,8 +6,9 @@ interface SitchOptions {
   backgroundColor?: string;
   testingMode?: 'prod' | 'staging' | 'local';
   onSitchActivationCallback?: (object: { hash?: string; url?: string }) => void;
-  onAddToCartCallback?: (object: { amount?: string; currency?: string; addedOrderItem?: any; }) => void;
-  onPaymentCallback?: (object: { amount?: string; currency?: string; orderBreakdown?: any; }) => void;
+  onAddToCartCallback?: (object: { amount?: string; currency?: string; addedOrderItem?: any }) => void;
+  onInitiateCheckoutCallback?: (object: { amount?: string; currency?: string; orderBreakdown?: any }) => void;
+  onPaymentCallback?: (object: { amount?: string; currency?: string; orderBreakdown?: any; customerEmail: string }) => void;
 }
 
 const baseOptions = {
@@ -16,6 +17,7 @@ const baseOptions = {
   testingMode: 'prod',
   onSitchActivationCallback: () => undefined,
   onAddToCartCallback: () => undefined,
+  onInitiateCheckoutCallback: () => undefined,
   onPaymentCallback: () => undefined,
 };
 
@@ -56,7 +58,7 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
       sitchEmbedContainer.innerHTML = /*html*/ `
         <div id="_sitch_full-screen-dimmer"></div>
         <div id="_sitch_iframe-container">
-          <iframe id="_sitch_iframe" src="${baseUrl}/?e=true&bgc=${mergedOptions.backgroundColor.replace(/#/g, '%23')}&v=${sessionId}" allow="payment *"></iframe>
+          <iframe title="Sitch Embed" id="_sitch_iframe" src="${baseUrl}/?e=true&bgc=${mergedOptions.backgroundColor.replace(/#/g, '%23')}&v=${sessionId}" allow="payment *"></iframe>
         </div>
       `;
       document.body.appendChild(sitchEmbedContainer);
@@ -242,8 +244,11 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
               case '_sitch_addToCartConversion':
                 mergedOptions.onAddToCartCallback({ amount: event.data.amount, currency: event.data.currency?.toLowerCase(), addedOrderItem: event.data.addedOrderItem });
                 break;
+              case '_sitch_initiateCheckout':
+                mergedOptions.onInitiateCheckoutCallback({ amount: event.data.amount, currency: event.data.currency?.toLowerCase(), orderBreakdown: event.data.orderBreakdown });
+                break;
               case '_sitch_paymentConversion':
-                mergedOptions.onPaymentCallback({ amount: event.data.amount, currency: event.data.currency?.toLowerCase(), orderBreakdown: event.data.orderBreakdown });
+                mergedOptions.onPaymentCallback({ amount: event.data.amount, currency: event.data.currency?.toLowerCase(), orderBreakdown: event.data.orderBreakdown, customerEmail: event.data.customerEmail });
                 break;
             }
           } else if (typeof event.data === 'string') {
