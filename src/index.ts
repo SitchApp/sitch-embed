@@ -9,6 +9,7 @@ interface SitchOptions {
   onAddToCartCallback?: (object: { amount?: string; currency?: string; addedOrderItem?: any }) => void;
   onInitiateCheckoutCallback?: (object: { amount?: string; currency?: string; orderBreakdown?: any }) => void;
   onPaymentCallback?: (object: { amount?: string; currency?: string; orderBreakdown?: any; customerEmail: string }) => void;
+  onCustomerEmailCollected?: (object: { customerEmail: string }) => void;
 }
 
 const baseOptions = {
@@ -19,6 +20,7 @@ const baseOptions = {
   onAddToCartCallback: () => undefined,
   onInitiateCheckoutCallback: () => undefined,
   onPaymentCallback: () => undefined,
+  onCustomerEmailCollected: () => undefined,
 };
 
 export default (options: Partial<SitchOptions> | undefined = undefined) => {
@@ -249,6 +251,9 @@ export default (options: Partial<SitchOptions> | undefined = undefined) => {
                 break;
               case '_sitch_paymentConversion':
                 mergedOptions.onPaymentCallback({ amount: event.data.amount, currency: event.data.currency?.toLowerCase(), orderBreakdown: event.data.orderBreakdown, customerEmail: event.data.customerEmail });
+                break;
+              case '_sitch_customerEmailCollected':
+                mergedOptions.onCustomerEmailCollected({ customerEmail: event.data.customerEmail });
                 break;
             }
           } else if (typeof event.data === 'string') {
